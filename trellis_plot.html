@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Trellis plot</title>
+		<script type="text/javascript" src="d3.min.js"></script>
+		<style type="text/css">
+		</style>
+	</head>
+	<body>
+
+		<script type="text/javascript">
+
+			var w = 1500;
+			var h = 1000;
+      var dataset;
+
+      d3.csv("county_crime_sample.csv", function(csv_data) {
+        dataset = csv_data;
+
+        var margin = {top: 100, right: 100, bottom: 100, left: 100};
+        w = w - margin.left - margin.right;
+        h = h - margin.top - margin.bottom;
+
+        var svg = d3.select("body")
+                    .append("svg")
+                    .attr("width", w)
+                    .attr("height", h);
+        svg.append("text")
+        .attr("x", (w - margin.left - margin.right)/2)
+        .attr("y", (margin.top / 4))
+				.attr("font-weight","bold")
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .style("text-decoration", "underline")
+        .text("Trellis plot using County crime data");
+
+
+        var nested_data = d3.nest()
+                            .key(function(d) { return d.State;})
+                            .key(function(d) { return d.Year;})
+                            .sortKeys(d3.ascending)
+                            .rollup(function(d) {
+                              return d3.sum(d, function(g) {return g.Totals_Violent_All; })
+                            })
+                            .entries(csv_data);
+        var California_data = nested_data.filter(function (d) { return d.key == 'California' });
+
+        var Florida_data = nested_data.filter(function (d) { return d.key == 'Florida' });
+
+        var Texas_data = nested_data.filter(function (d) { return d.key == 'Texas' });
+
+        let max_values = [];
+        max_values.push(d3.max(California_data[0].values, function(d) { return d.value;}));
+        max_values.push(d3.max(Florida_data[0].values, function(d) { return d.value;}));
+        max_values.push(d3.max(Texas_data[0].values, function(d) { return d.value;}));
+
+        var max = Math.max(...max_values);
+
+        let trellis_plots = [];
+        trellis_plots.push(California_data[0].values);
+        trellis_plots.push(Florida_data[0].values);
+        trellis_plots.push(Texas_data[0].values);
+
+        var yScale = d3.scaleLinear()
+                .domain([0, max])
+                .rangeRound([h/2,0]);
+
+        var g = svg.append("g")
+                   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+         g.append("g")
+          .attr("class", "y-axis")
+          .call(d3.axisLeft(yScale).ticks(10))
+          .append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 6)
+          .attr("dy", "0.71em")
+          .attr("text-anchor", "end");
+
+
+        let state_names = [];
+        state_names.push("California");
+        state_names.push("Florida");
+        state_names.push("Texas");
+
+        trellis_plots.forEach(function(d,i) {
+          g.append("text")
+          .attr("x", (i*w/3 - i*margin.right)+ 75)
+          .attr("y", (0-margin.top / 4))
+          .attr("font-weight","bold")
+          .attr("text-anchor", "start")
+          .style("font-size", "12px")
+          .text(state_names[i]);
+
+          var xScale = d3.scaleBand()
+                  .domain(d.map(function(d) { return d.key; }))
+                  .rangeRound([i*w/3 - i*margin.right, (i+1)*w/3 - (i+1)*margin.right])
+                  .paddingInner(0.05);
+
+          var line = d3.line()
+                        .x(function(d) { return xScale(d.key); })
+                        .y(function(d) { return yScale(d.value); });
+
+          //by default 1em = 16px if font size is not set for any element
+          g.append("g")
+           .attr("class", "x-axis")
+           .attr("transform", "translate(0," + h/2 + ")")
+           .call(d3.axisBottom(xScale))
+           .selectAll("text")
+           .attr("font-size","5px")
+           .attr("y", 0)
+           .attr("x", 9)
+           .attr("dy", ".35em")
+           .attr("transform", "rotate(90)")
+           .style("text-anchor", "start")
+           ;
+
+           g.append("path")
+            .datum(d)
+            .attr("fill", "none")
+            .attr("stroke", "steelblue")
+            .attr("stroke-linejoin", "round")
+            .attr("stroke-linecap", "round")
+            .attr("stroke-width", 1.5)
+            .attr("d", line);
+
+        });
+
+       svg.append("text")
+         .attr("text-anchor", "middle")
+         .attr("transform", "translate("+ (margin.left/2) +","+(h/2 - margin.top)+")rotate(-90)")
+				 .attr("font-weight","bold")
+         .text("Violence");
+
+       svg.append("text")
+        .attr("text-anchor", "end")
+        .attr("transform", "translate("+ (w/2) +","+(h/2 + 150)+")")
+				.attr("font-weight","bold")
+        .text("Year");
+
+      });
+
+
+
+		</script>
+	</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Scatterplot-Bivariate</title>
+		<script type="text/javascript" src="d3.min.js"></script>
+		<style type="text/css">
+		</style>
+	</head>
+	<body>
+
+		<script type="text/javascript">
+
+			var w = 1000;
+			var h = 500;
+      var dataset;
+
+      d3.csv("county_crime_sample.csv", function(csv_data) {
+        dataset = csv_data;
+				var margin = {top: 50, right: 100, bottom: 50, left: 100};
+        var svg = d3.select("body")
+                    .append("svg")
+                    .attr("width", w)
+                    .attr("height", h);
+
+				svg.append("text")
+				    .attr("x", (w)/2)
+				    .attr("y", (margin.top / 4))
+				    .attr("text-anchor", "middle")
+						.attr("font-weight","bold")
+				    .style("font-size", "16px")
+				    .style("text-decoration", "underline")
+				    .text("Scatterplot-Bivariate using County crime data");
+
+        w = svg.attr("width") - margin.left - margin.right;
+        h = svg.attr("height") - margin.top - margin.bottom;
+
+        //+- operator is used for type conversion
+        csv_data.forEach(function(d) {
+              d.Totals_Violent_All = +d.Totals_Violent_All;
+              d.Population = +d.Population;
+            });
+
+        var xScale = d3.scaleLinear()
+                .domain([d3.min(csv_data, function(d) { return d.Totals_Violent_All;}),d3.max(csv_data, function(d) { return d.Totals_Violent_All;})])
+                .range([0, w]);
+
+        var yScale = d3.scaleLinear()
+                .domain([d3.min(csv_data, function(d) { return d.Population; }),d3.max(csv_data, function(d) { return d.Population; })])
+                .range([h,0]);
+
+        var g = svg.append("g")
+                   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        //by default 1em = 16px if font size is not set for any element
+        g.append("g")
+         .attr("class", "x-axis")
+         .attr("transform", "translate(0," + h + ")")
+         .call(d3.axisBottom(xScale).ticks(10));
+
+        g.append("g")
+         .attr("class", "y-axis")
+         .call(d3.axisLeft(yScale).ticks(10))
+         .append("text")
+         .attr("transform", "rotate(-90)")
+         .attr("y", 6)
+         .attr("dy", "0.71em")
+         .attr("text-anchor", "end");
+
+       g.selectAll(".dot")
+         .data(csv_data)
+         .enter().append("circle")
+         .attr("class", "dot")
+         .attr("r", 3.5)
+         .attr("cx", function(d) { return xScale(d.Totals_Violent_All); })
+         .attr("cy", function(d) { return yScale(d.Population); })
+				 .style("fill", "#DDA0DD")
+				 .style("stroke", "gray");
+
+			 svg.append("text")
+				 .attr("text-anchor", "middle")
+				 .attr("transform", "translate("+ (margin.left/4) +","+(h/2)+")rotate(-90)")
+				 .attr("font-weight","bold")
+				 .text("Population");
+
+			 svg.append("text")
+				.attr("text-anchor", "end")
+				.attr("transform", "translate("+ (w/2 + margin.left) +","+(h + margin.top + margin.bottom)+")")
+				.attr("font-weight","bold")
+				.text("Violence");
+
+      });
+
+
+
+		</script>
+	</body>
+</html>

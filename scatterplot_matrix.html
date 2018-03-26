@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Scatterplot Matrix</title>
+		<script type="text/javascript" src="d3.min.js"></script>
+    <style>
+
+      .axis line{
+        fill: none;
+        stroke: steelblue;
+        stroke-width: 0.25px;
+      }
+      .frame {
+        fill: none;
+      }
+      circle {
+        fill-opacity: .4;
+      }
+
+  </style>
+	</head>
+	<body>
+
+		<script type="text/javascript">
+
+			var w = 1000;
+			var h = 1000;
+      var padding = 20;
+
+      d3.csv("county_crime_sample.csv", function(error,csv_data) {
+        if (error) throw error;
+
+        var margin = {top: 100, right: 100, bottom: 100, left: 100};
+        w = w - margin.left - margin.right;
+        h = h - margin.top - margin.bottom;
+
+        let traits = [];
+        traits.push("Totals_Violent_All");
+        traits.push("Totals_Property_All");
+        traits.push("Population");
+        let n = traits.length;
+        let domainByTrait = {};
+        let size = w/n - padding/2 - margin.left/3 - margin.right/3;
+
+        //+- operator is used for type conversion
+        csv_data.forEach(function(d) {
+          traits.forEach(function(trait) {
+            d[trait] = +d[trait];
+          });
+        });
+
+        traits.forEach(function(trait) {
+          domainByTrait[trait] = d3.extent(csv_data, function(d) { return d[trait]; });
+        });
+
+        var xScale = d3.scaleLinear()
+                       .range([padding/2, size - padding/2]);
+
+        var yScale = d3.scaleLinear()
+                       .range([size - padding/2, padding/2]);
+
+
+
+        var xAxis = d3.axisBottom(xScale)
+                      .ticks(5)
+                      .tickSize(size * n);
+
+        var yAxis = d3.axisLeft(yScale).ticks(5).tickSize(-size * n);
+
+        var svg = d3.select("body")
+                    .append("svg")
+                    .attr("width", w)
+                    .attr("height", h)
+                    .append("g")
+                    .attr("transform", "translate(" + (margin.left) + "," + (margin.top) + ")");
+
+        svg.append("text")
+            .attr("x", w/4 + 70)
+            .attr("y", -(margin.top / 4))
+						.attr("font-weight","bold")
+            .attr("text-anchor", "middle")
+            .style("font-size", "16px")
+            .style("text-decoration", "underline")
+            .text("Scatterplot matrix using County crime data");
+
+
+        svg.selectAll(".x.axis")
+           .data(traits)
+           .enter().append("g")
+           .attr("class", "x axis")
+           .attr("transform", function(d, i) { return "translate(" + (n - i - 1) * size + ",0)"; })
+           .each(function(d) {
+             xScale.domain(domainByTrait[d]);
+             d3.select(this).call(xAxis)
+             .selectAll("text")
+             .attr("y", 0)
+             .attr("x", 610)
+             .attr("dy", ".35em")
+             .attr("transform", "rotate(90)")
+             .style("text-anchor", "end")
+             ; });
+
+        svg.selectAll(".y.axis")
+           .data(traits)
+           .enter().append("g")
+           .attr("class", "y axis")
+           .attr("transform", function(d, i) { return "translate(0," + i * size + ")"; })
+           .each(function(d) {
+             yScale.domain(domainByTrait[d]);
+             d3.select(this).call(yAxis);});
+
+       var cell = svg.selectAll(".cell")
+       .data(cross(traits, traits))
+       .enter().append("g")
+       .attr("class", "cell")
+       .attr("transform", function(d) { return "translate(" + (n - d.i - 1) * size + "," + d.j * size + ")"; })
+       .each(plot);
+
+       // Titles for the diagonal.
+       cell.filter(function(d) { return d.i === d.j; }).append("text")
+           .attr("x", padding)
+           .attr("y", padding)
+           .attr("dy", ".71em")
+           .text(function(d) { return d.x; });
+
+
+       function plot(p) {
+          var cell = d3.select(this);
+
+          xScale.domain(domainByTrait[p.x]);
+          yScale.domain(domainByTrait[p.y]);
+
+          cell.append("rect")
+              .attr("class", "frame")
+              .attr("x", padding / 2)
+              .attr("y", padding / 2)
+              .attr("width", size - padding)
+              .attr("height", size - padding);
+
+          cell.selectAll("circle")
+              .data(csv_data)
+              .enter().append("circle")
+              .attr("cx", function(d) { return xScale(d[p.x]); })
+              .attr("cy", function(d) { return yScale(d[p.y]); })
+              .attr("r", 3)
+              .style("fill", "#DDA0DD");
+        }
+
+      });
+
+      function cross(a, b) {
+        var c = [], n = a.length, m = b.length, i, j;
+        for (i = -1; ++i < n;) for (j = -1; ++j < m;) c.push({x: a[i], i: i, y: b[j], j: j});
+        return c;
+      }
+
+
+
+		</script>
+	</body>
+</html>

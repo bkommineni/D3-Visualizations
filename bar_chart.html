@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Bar Chart</title>
+		<script type="text/javascript" src="d3.min.js"></script>
+		<style type="text/css">
+		</style>
+	</head>
+	<body>
+
+		<script type="text/javascript">
+
+			var w = 1000;
+			var h = 500;
+
+
+      var dataset;
+
+      d3.csv("county_crime_sample.csv", function(csv_data) {
+        dataset = csv_data;
+				var margin = {top: 50, right: 100, bottom: 50, left: 100};
+        var svg = d3.select("body")
+                    .append("svg")
+                    .attr("width", w)
+                    .attr("height", h);
+
+				svg.append("text")
+				    .attr("x", (w)/2)
+				    .attr("y", (margin.top / 4))
+				    .attr("text-anchor", "middle")
+						.attr("font-weight","bold")
+				    .style("font-size", "16px")
+				    .style("text-decoration", "underline")
+				    .text("Bar chart using County crime data");
+
+        w = svg.attr("width") - margin.left - margin.right;
+        h = svg.attr("height") - margin.top - margin.bottom;
+
+
+        var nested_data = d3.nest()
+                            .key(function(d) { return d.State;})
+                            .rollup(function(d) {
+                              return d3.sum(d, function(g) {return g.Totals_Violent_All; });
+                          }).entries(csv_data);
+        nested_data.forEach(function(d) {
+         d.State = d.key;
+         d.Totals_Violent_All = +d.value;
+        });
+
+        var xScale = d3.scaleBand()
+                .domain(nested_data.map(function(d) { return d.State; }))
+                .rangeRound([0, w])
+                .paddingInner(0.05);
+
+        var yScale = d3.scaleLinear()
+                .domain([0, d3.max(nested_data, function(d) { return d.Totals_Violent_All;})])
+                .rangeRound([h,0]);
+
+        var g = svg.append("g")
+                   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        //by default 1em = 16px if font size is not set for any element
+        g.append("g")
+         .attr("class", "x-axis")
+         .attr("transform", "translate(0," + h + ")")
+         .call(d3.axisBottom(xScale))
+         .selectAll("text")
+         .attr("y", 0)
+         .attr("x", 9)
+         .attr("dy", ".35em")
+         .attr("transform", "rotate(90)")
+				 .style("font-size","5.5px")
+         .style("text-anchor", "start");
+
+        g.append("g")
+         .attr("class", "y-axis")
+         .call(d3.axisLeft(yScale).ticks(10))
+         .append("text")
+         .attr("transform", "rotate(-90)")
+         .attr("y", 6)
+         .attr("dy", "0.71em")
+         .attr("text-anchor", "end");
+
+
+        g.selectAll("rect")
+          .data(nested_data)
+          .enter()
+          .append("rect")
+					.style("fill", "#DDA0DD")
+ 				  .style("stroke", "gray")
+          .attr("width", xScale.bandwidth())
+          .attr("x", function(d) { return xScale(d.State); })
+          .attr("y", function(d) { return yScale(d.Totals_Violent_All); })
+          .attr("height", function(d) { return h - yScale(d.Totals_Violent_All); });
+
+
+				svg.append("text")
+					.attr("text-anchor", "middle")
+					.attr("transform", "translate("+ (margin.left/4) +","+(h/2)+")rotate(-90)")
+					.attr("font-weight","bold")
+					.text("No of Violence related crimes");
+      });
+
+
+
+		</script>
+	</body>
+</html>
