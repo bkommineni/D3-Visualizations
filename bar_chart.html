@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Bar Chart</title>
-		<script type="text/javascript" src="d3.min.js"></script>
+		<script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
 		<style type="text/css">
 		</style>
 	</head>
@@ -51,7 +51,7 @@
         var xScale = d3.scaleBand()
                 .domain(nested_data.map(function(d) { return d.State; }))
                 .rangeRound([0, w])
-                .paddingInner(0.05);
+                .paddingInner(0.15);
 
         var yScale = d3.scaleLinear()
                 .domain([0, d3.max(nested_data, function(d) { return d.Totals_Violent_All;})])
@@ -86,8 +86,7 @@
           .data(nested_data)
           .enter()
           .append("rect")
-					.style("fill", "#DDA0DD")
- 				  .style("stroke", "gray")
+					.style("fill", "#CD5C5C")
           .attr("width", xScale.bandwidth())
           .attr("x", function(d) { return xScale(d.State); })
           .attr("y", function(d) { return yScale(d.Totals_Violent_All); })

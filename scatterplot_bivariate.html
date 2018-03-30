@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Scatterplot-Bivariate</title>
-		<script type="text/javascript" src="d3.min.js"></script>
+		<script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
 		<style type="text/css">
 		</style>
 	</head>
@@ -41,6 +41,10 @@
               d.Population = +d.Population;
             });
 
+				csv_data = csv_data.filter(function (d) { return d.Population > 0})
+
+				console.log(csv_data);
+
         var xScale = d3.scaleLinear()
                 .domain([d3.min(csv_data, function(d) { return d.Totals_Violent_All;}),d3.max(csv_data, function(d) { return d.Totals_Violent_All;})])
                 .range([0, w]);
@@ -73,8 +77,8 @@
          .attr("r", 3.5)
          .attr("cx", function(d) { return xScale(d.Totals_Violent_All); })
          .attr("cy", function(d) { return yScale(d.Population); })
-				 .style("fill", "#DDA0DD")
-				 .style("stroke", "gray");
+				 .style("fill", "#CD5C5C")
+				 .style("stroke", "	#D3D3D3");
 
 			 svg.append("text")
 				 .attr("text-anchor", "middle")

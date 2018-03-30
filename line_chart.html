@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Line Chart</title>
-		<script type="text/javascript" src="d3.min.js"></script>
+		<script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
 		<style type="text/css">
 		</style>
 	</head>
@@ -35,10 +35,10 @@
 
 
         var nested_data = d3.nest()
-                            .key(function(d) { return d.Year;})
+                            .key(function(d) { return +d.Year;})
                             .sortKeys(d3.ascending)
                             .rollup(function(d) {
-                              return d3.sum(d, function(g) {return g.Totals_Violent_All; });
+                              return d3.sum(d, function(g) {return +g.Totals_Violent_All; });
                           }).entries(csv_data);
         nested_data.forEach(function(d) {
          d.Year = +d.key;
@@ -47,16 +47,16 @@
 
         var xScale = d3.scaleBand()
                 .domain(nested_data.map(function(d) { return d.Year; }))
-                .rangeRound([0, w])
-                .paddingInner(0.05);
+                .range([0, w])
+								.paddingInner(1);
 
         var yScale = d3.scaleLinear()
                 .domain([0, d3.max(nested_data, function(d) { return d.Totals_Violent_All;})])
-                .rangeRound([h,0]);
+                .range([h,0]);
 
         var line = d3.line()
-                      .x(function(d) { return xScale(d.Year); })
-                      .y(function(d) { return yScale(d.Totals_Violent_All); });
+                      .x(function(d) {return xScale(d.Year); })
+                      .y(function(d) {return yScale(d.Totals_Violent_All); });
 
         var g = svg.append("g")
                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -64,7 +64,9 @@
         g.append("g")
          .attr("class", "x-axis")
          .attr("transform", "translate(0," + h + ")")
-         .call(d3.axisBottom(xScale));
+         .call(d3.axisBottom(xScale))
+				 .append("text")
+         .attr("text-anchor", "start");;
 
         g.append("g")
          .attr("class", "y-axis")
@@ -79,7 +81,7 @@
          g.append("path")
           .datum(nested_data)
           .attr("fill", "none")
-          .attr("stroke", "#DDA0DD")
+          .attr("stroke", "#CD5C5C")
           .attr("stroke-linejoin", "round")
           .attr("stroke-linecap", "round")
           .attr("stroke-width", 1.5)

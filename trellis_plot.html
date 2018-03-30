@@ -3,9 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Trellis plot</title>
-		<script type="text/javascript" src="d3.min.js"></script>
-		<style type="text/css">
-		</style>
+		<script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
 	</head>
 	<body>
 
@@ -96,7 +94,7 @@
           var xScale = d3.scaleBand()
                   .domain(d.map(function(d) { return d.key; }))
                   .rangeRound([i*w/3 - i*margin.right, (i+1)*w/3 - (i+1)*margin.right])
-                  .paddingInner(0.05);
+                  .paddingInner(1);
 
           var line = d3.line()
                         .x(function(d) { return xScale(d.key); })
@@ -119,7 +117,7 @@
            g.append("path")
             .datum(d)
             .attr("fill", "none")
-            .attr("stroke", "steelblue")
+            .attr("stroke", "#CD5C5C")
             .attr("stroke-linejoin", "round")
             .attr("stroke-linecap", "round")
             .attr("stroke-width", 1.5)
